@@ -43,15 +43,8 @@ func remove_extension(f []string) { //Plz, Check this
 			panic(err)
 		}
 		file_name = append(file_name, file.Name())
-
-		/*
-			if filepath.Ext(file_name) == ".png" {
-				os.Remove(file_name)
-				fmt.Println("Deleted", file.Name())
-			}
-		}*/
 	}
-	//fmt.Println(file_name)
+	fmt.Println(file_name)
 }
 
 //func remove_duplicated() {}

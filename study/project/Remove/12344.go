@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
-	"reflect"
 )
 
 func main() {
 
-	dirname := "C:\\Program Files\\AhnLab" + string(filepath.Separator)
+	dirname := "C:\\Users\\HM-Fornesic2\\Desktop\\Test1234" + string(filepath.Separator)
 
 	d, err := os.Open(dirname)
 	if err != nil {
@@ -27,11 +27,14 @@ func main() {
 	fmt.Println("Reading " + dirname)
 
 	for _, file := range files {
-		fmt.Println(reflect.TypeOf(file))
-		/*if file.Mode() {
-		if filepath.Ext(file.Name()) == "." {
-			fmt.Println("file.Name()")
-			//fmt.Println("Deleted ", file.Name())
-		*/
+		if file.Mode().IsRegular() {
+			if filepath.Ext(file.Name()) == ".txt" {
+				err := os.Remove(file.Name())
+				if err != nil {
+					log.Fatal(err)
+				}
+				fmt.Println("Deleted ", file.Name())
+			}
+		}
 	}
 }

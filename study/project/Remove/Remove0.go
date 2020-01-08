@@ -32,26 +32,20 @@ func dir_read_string(dirpath string) ([]string, []int64) {
 	return file_name, file_info
 }
 
-//func export_csv() {}
+func export_csv() {}
 
 func remove_extension(f []string) { //Plz, Check this
 	//파일 목록이 저장된 슬라이스 입력 및 i에 리스트 저장
-	var file_name []string // 파일 이름 담을 슬라이스 선언
 	for _, i := range f {
 		file, err := os.Stat(i)
 		if err != nil {
 			panic(err)
 		}
-		file_name = append(file_name, file.Name())
-
-		/*
-			if filepath.Ext(file_name) == ".png" {
-				os.Remove(file_name)
-				fmt.Println("Deleted", file.Name())
-			}
-		}*/
+		if filepath.Ext(file.Name()) == ".png" {
+			os.Remove(file.Name())
+			fmt.Println("Deleted", file.Name())
+		}
 	}
-	//fmt.Println(file_name)
 }
 
 //func remove_duplicated() {}
