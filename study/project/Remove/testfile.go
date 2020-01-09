@@ -3,12 +3,11 @@ package main
 import (
 
 	//	"encoding/hex"
+	"crypto/sha1"
 	"flag"
 	"fmt"
 	"godirwalk"
-	"hash/fnv"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -16,7 +15,7 @@ import (
 
 type fileHash struct {
 	path string
-	hash uint64
+	hash string
 	size int64
 	err  error
 }
@@ -31,6 +30,7 @@ func input_path(dir string) string {
 	return dir
 }
 
+/*
 //대상 디렉터리 하위 포함한 정보 출력
 func dir_read_string(dirpath string) ([]string, []int64) {
 	var file_name []string
@@ -115,7 +115,7 @@ func getDuplicates(potentialDups [][]fileHash, scanLength int64) [][]fileHash {
 	}
 	duplicates := make([][]fileHash, 0, len(potentialDups))
 	for _, files := range potentialDups {
-		hashToFiles := make(map[uint64][]fileHash)
+		hashToFiles := make(map[string][]fileHash)
 		for _, file := range files {
 			if file.err == nil {
 				files, ok := hashToFiles[file.hash]
@@ -174,8 +174,8 @@ func removeDuplicates(duplicates [][]fileHash, moveDuplicateTo string) (dupCount
 
 func scanAndRemoveDuplicates(root string, moveDuplicateTo string) {
 	var (
-		fileCount     = 0
-		dupCount      = 0
+		fileCount = 0
+		//	dupCount      = 0
 		sameSizeCount = 0
 		fileByeSize   = make(map[int64][]string)
 	)
@@ -223,6 +223,7 @@ func scanAndRemoveDuplicates(root string, moveDuplicateTo string) {
 			sameSizeFiles = append(sameSizeFiles, fh)
 		}
 	}
+
 	if len(sameSizeFiles) > 0 {
 		potentialDups := getDuplicates(sameSizeFiles, potentialScanLength)
 		if len(potentialDups) > 0 {
@@ -232,8 +233,7 @@ func scanAndRemoveDuplicates(root string, moveDuplicateTo string) {
 			}
 		}
 	}
-
-	fmt.Printf("%d files, %d duplicates\n", fileCount, dupCount)
+	fmt.Printf("%v files, %d duplicates\n", sameSizeFiles, dupCount)
 }
 
 func getFileChecksum(file *fileHash, scanSize int64) {
@@ -243,14 +243,14 @@ func getFileChecksum(file *fileHash, scanSize int64) {
 		return
 	}
 	defer f.Close()
-	hasher := fnv.New64a()
+	hasher := sha1.New()
 	if scanSize != scanAll {
 		buf := make([]byte, scanSize)
 		fmt.Printf("scan first %d bytes of %s\n", scanSize, file.path)
 		n, err := f.Read(buf)
 		if err == nil {
 			hasher.Write(buf[:n])
-			file.hash = hasher.Sum64()
+			file.hash = string(hasher.Sum(nil))
 
 		} else {
 			file.err = err
@@ -259,7 +259,7 @@ func getFileChecksum(file *fileHash, scanSize int64) {
 		fmt.Printf("Scanning file %s ...\n", file.path)
 		_, file.err = io.Copy(hasher, f)
 		if file.err == nil {
-			file.hash = hasher.Sum64()
+			file.hash = string(hasher.Sum(nil))
 		}
 	}
 }

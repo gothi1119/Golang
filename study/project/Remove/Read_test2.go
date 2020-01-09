@@ -2,52 +2,66 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 )
 
-func prepareTestDirTree(tree string) (string, error) {
-	tmpDir, err := ioutil.TempDir("", "")
-	if err != nil {
-		return "", fmt.Errorf("error creating temp directory: %v\n", err)
-	}
-
-	err = os.MkdirAll(filepath.Join(tmpDir, tree), 0755)
-	if err != nil {
-		os.RemoveAll(tmpDir)
-		return "", err
-	}
-
-	return tmpDir, nil
+//대상 디렉터리 경로를 입력받음
+func inputPath(dir string) string {
+	fmt.Println("경로 입력:")
+	fmt.Scan(&dir)
+	return dir
 }
 
-func main() {
-	tmpDir, err := prepareTestDirTree("dir/to/walk/skip")
-	if err != nil {
-		fmt.Printf("unable to create test dir tree: %v\n", err)
-		return
-	}
-	defer os.RemoveAll(tmpDir)
-	os.Chdir(tmpDir)
-
-	subDirToSkip := "skip"
-
-	fmt.Println("On Unix:")
-	err = filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
-			return err
+//대상 디렉터리 하위 포함한 정보 출력
+func dirReadString(dirpath string) ([]string, []int64) {
+	var fileName []string
+	var fileInfo []int64
+	err := filepath.Walk(dirpath, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			// 파일 명(경로포함) 및 파일 크기 출력
+			fileName = append(fileName, path)
+			fileInfo = append(fileInfo, info.Size())
 		}
-		if info.IsDir() && info.Name() == subDirToSkip {
-			fmt.Printf("skipping a dir without errors: %+v \n", info.Name())
-			return filepath.SkipDir
-		}
-		fmt.Printf("visited file or dir: %q\n", path)
 		return nil
 	})
 	if err != nil {
-		fmt.Printf("error walking the path %q: %v\n", tmpDir, err)
-		return
+		log.Println(err)
+		//	fmt.Println(list)
+		//return files, err
+		//	return
 	}
+	return fileName, fileInfo
+}
+
+//func export_csv() {}
+
+func removeExtension(f []string) { //Plz, Check this
+	//파일 목록이 저장된 슬라이스 입력 및 i에 리스트 저장
+	for _, i := range f {
+		file, err := os.Stat(i)
+		if err != nil {
+			panic(err)
+		}
+		fileName := file.Name()
+		//	fmt.Println("test" + fileName)
+		if filepath.Ext(fileName) == ".bmp" || filepath.Ext(fileName) == ".BMP" {
+			// os.Remove(fileName) <-- you are removing the file in the current dir
+			os.Remove(i) // I woud not use "i" as the var
+			//	fmt.Println("Deleted " + file.Name())
+		}
+	}
+}
+
+//func remove_duplicated() {}
+
+func main() {
+	var input string
+	dirPath := inputPath(input)
+	filePath, fileInfo := dirReadString(dirPath) // Do not use _ in go
+	removeExtension(filePath)
+	//	fmt.Print(file_path[:], file_info[:])
+	//	fileinfo, _ := dir_read_string(dirPath)
+	fmt.Println(fileInfo)
 }
