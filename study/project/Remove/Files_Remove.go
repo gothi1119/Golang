@@ -25,7 +25,7 @@ const ScanLength = 2048
 //대상 디렉터리 경로를 입력받음
 func input_path(dir string) string {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Please Enter a Target Root Directory : ")
+	fmt.Printf("Please enter a target root directory : ")
 	dirs, _ := reader.ReadString('\n')
 	dircs := strings.TrimSpace(dirs)
 	return dircs
@@ -128,10 +128,10 @@ func getDuplicates(potentialDups [][]filehash, scanLength int64) [][]filehash {
 
 func removeDuplicates(duplicates [][]filehash) (dupCount int) {
 	for _, files := range duplicates {
-		fmt.Println("Original Is", files[0].path)
+		fmt.Println("Original is", files[0].path)
 		for _, path := range files[1:] {
 			dupCount += 1
-			fmt.Println("Deleting Duplicate File ", path.path)
+			fmt.Println("Deleting duplicate file ", path.path)
 			_ = os.Remove(path.path)
 		}
 	}
@@ -149,7 +149,7 @@ func getFileChecksum(file *filehash, scanSize int64) {
 	file_hash := fnv.New64a()
 	if scanSize != scanAll {
 		buf := make([]byte, scanSize)
-		fmt.Printf("Scanning Doubtful File... %s\n", file.path)
+		fmt.Printf("Scanning doubtful file... %s\n", file.path)
 		n, err := list.Read(buf)
 		if err == nil {
 			file_hash.Write(buf[:n])
@@ -158,7 +158,7 @@ func getFileChecksum(file *filehash, scanSize int64) {
 			file.err = err
 		}
 	} else {
-		fmt.Printf("Calculating Hash Values For File %s...\n", file.path)
+		fmt.Printf("Calculating hash values for file %s...\n", file.path)
 		_, file.err = io.Copy(file_hash, list)
 		if file.err == nil {
 			file.hash = file_hash.Sum64()
@@ -175,33 +175,23 @@ func RemoveByExt(filelist []string, fileCnt int) (int, int) {
 			panic(err)
 		}
 		fileName := file.Name()
-		fmt.Println("Scanning File Extension... ", fileName)
+		fmt.Println("Scanning file extension... ", fileName)
 		if filepath.Ext(fileName) != ".doc" && filepath.Ext(fileName) != ".DOC" && filepath.Ext(fileName) != ".ppt" && filepath.Ext(fileName) != ".PPT" && filepath.Ext(fileName) != ".xls" && filepath.Ext(fileName) != ".XLS" && filepath.Ext(fileName) != ".xlsx" && filepath.Ext(fileName) != ".XLSX" && filepath.Ext(fileName) != ".xlsb" && filepath.Ext(fileName) != ".XLSB" && filepath.Ext(fileName) != ".hwp" && filepath.Ext(fileName) != ".HWP" && filepath.Ext(fileName) != ".rtf" && filepath.Ext(fileName) != ".RTF" && filepath.Ext(fileName) != ".txt" && filepath.Ext(fileName) != ".TXT" && filepath.Ext(fileName) != ".pdf" && filepath.Ext(fileName) != ".PDF" && filepath.Ext(fileName) != ".csv" && filepath.Ext(fileName) != ".CSV" && filepath.Ext(fileName) != ".eml" && filepath.Ext(fileName) != ".EML" && filepath.Ext(fileName) != ".pst" && filepath.Ext(fileName) != ".PST" && filepath.Ext(fileName) != ".xlsm" && filepath.Ext(fileName) != ".XLSM" && filepath.Ext(fileName) != ".mbox" && filepath.Ext(fileName) != ".MBOX" && filepath.Ext(fileName) != ".ost" && filepath.Ext(fileName) != ".OST" && filepath.Ext(fileName) != ".msg" && filepath.Ext(fileName) != ".MSG" && filepath.Ext(fileName) != ".dbx" && filepath.Ext(fileName) != ".DBX" {
 			os.Remove(files)
-			fmt.Println("Deleting File By Extension... ", files)
+			fmt.Println("Deleting file by extension... ", files)
 			extCount += 1
 		}
 	}
-	fmt.Println("\n2nd Work Loding...........\n")
+	fmt.Println("\n2nd routine loding...........\n")
 	return fileCnt, extCount
 }
 
-func RemoveEmptyDir(filelist []string) {
-	for _, files := range filelist {
-		file, err := os.Stat(files)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println("Test!", file)
-	}
-}
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	var (
 		input         string
 		DupCnt        int
 		samesizeFiles [][]filehash
-		key           string
 	)
 	dirPath := input_path(input)
 	st, err := os.Stat(dirPath)
@@ -209,10 +199,10 @@ func main() {
 		panic(err)
 	}
 	if !st.IsDir() {
-		fmt.Println("Invaild Path", dirPath)
+		fmt.Println("Invaild path", dirPath)
 	}
-	fmt.Println("\nWorking Start-------------------------------------------")
-	fmt.Println("\n1st Work Loding...........\n")
+	fmt.Println("\nTasks start............")
+	fmt.Println("\n1st routine loding...........\n")
 	fileCnt, _, _, filelst := scanDir(dirPath)
 	fileCnt_ext, extCount := RemoveByExt(filelst, fileCnt)
 	//Reset
@@ -225,17 +215,15 @@ func main() {
 			duplicates := getDuplicates(potentialDups, scanAll)
 			if len(duplicates) > 0 {
 				DupCnt = removeDuplicates(duplicates)
-
 			}
 		}
 	}
-
-	fmt.Println("\nResult--------------------------------------------------")
-	fmt.Printf("\n Total %d File Deleting Files By Extension : %d Files   \n", fileCnt_ext, extCount)
-	fmt.Printf("\n After %v Files, %d Duplicates                           \n", fileCnt, DupCnt)
-	fmt.Println("\nWorking Finish------------------------------------------\n")
-	fmt.Println("Press Any Key To Exit.......\n ")
-	fmt.Scan(&key)
+	fmt.Println("\nFinish............")
+	fmt.Println("\nResults--------------------------------------------------")
+	fmt.Printf("\n Total %d file deleting files by extension : %d files   \n", fileCnt_ext, extCount)
+	fmt.Printf("\n After %v files, %d duplicates\n", fileCnt, DupCnt)
+	fmt.Printf("\n Residual : %d files remain (Not include directorys)\n", fileCnt-DupCnt)
+	fmt.Println("\n----------------------------------------------------------------\n")
 }
 
 //Writer : Myeongjin.Goh
