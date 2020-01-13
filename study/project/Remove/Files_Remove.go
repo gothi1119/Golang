@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 type filehash struct {
@@ -176,7 +177,7 @@ func RemoveByExt(filelist []string, fileCnt int) (int, int) {
 		}
 		fileName := file.Name()
 		fmt.Println("Scanning file extension... ", fileName)
-		if filepath.Ext(fileName) != ".doc" && filepath.Ext(fileName) != ".DOC" && filepath.Ext(fileName) != ".ppt" && filepath.Ext(fileName) != ".PPT" && filepath.Ext(fileName) != ".xls" && filepath.Ext(fileName) != ".XLS" && filepath.Ext(fileName) != ".xlsx" && filepath.Ext(fileName) != ".XLSX" && filepath.Ext(fileName) != ".xlsb" && filepath.Ext(fileName) != ".XLSB" && filepath.Ext(fileName) != ".hwp" && filepath.Ext(fileName) != ".HWP" && filepath.Ext(fileName) != ".rtf" && filepath.Ext(fileName) != ".RTF" && filepath.Ext(fileName) != ".txt" && filepath.Ext(fileName) != ".TXT" && filepath.Ext(fileName) != ".pdf" && filepath.Ext(fileName) != ".PDF" && filepath.Ext(fileName) != ".csv" && filepath.Ext(fileName) != ".CSV" && filepath.Ext(fileName) != ".eml" && filepath.Ext(fileName) != ".EML" && filepath.Ext(fileName) != ".pst" && filepath.Ext(fileName) != ".PST" && filepath.Ext(fileName) != ".xlsm" && filepath.Ext(fileName) != ".XLSM" && filepath.Ext(fileName) != ".mbox" && filepath.Ext(fileName) != ".MBOX" && filepath.Ext(fileName) != ".ost" && filepath.Ext(fileName) != ".OST" && filepath.Ext(fileName) != ".msg" && filepath.Ext(fileName) != ".MSG" && filepath.Ext(fileName) != ".dbx" && filepath.Ext(fileName) != ".DBX" {
+		if filepath.Ext(fileName) != ".doc" && filepath.Ext(fileName) != ".DOC" && filepath.Ext(fileName) != ".ppt" && filepath.Ext(fileName) != ".PPT" && filepath.Ext(fileName) != ".xls" && filepath.Ext(fileName) != ".XLS" && filepath.Ext(fileName) != ".xlsx" && filepath.Ext(fileName) != ".XLSX" && filepath.Ext(fileName) != ".xlsb" && filepath.Ext(fileName) != ".XLSB" && filepath.Ext(fileName) != ".hwp" && filepath.Ext(fileName) != ".HWP" && filepath.Ext(fileName) != ".rtf" && filepath.Ext(fileName) != ".RTF" && filepath.Ext(fileName) != ".txt" && filepath.Ext(fileName) != ".TXT" && filepath.Ext(fileName) != ".pdf" && filepath.Ext(fileName) != ".PDF" && filepath.Ext(fileName) != ".csv" && filepath.Ext(fileName) != ".CSV" && filepath.Ext(fileName) != ".eml" && filepath.Ext(fileName) != ".EML" && filepath.Ext(fileName) != ".pst" && filepath.Ext(fileName) != ".PST" && filepath.Ext(fileName) != ".xlsm" && filepath.Ext(fileName) != ".XLSM" && filepath.Ext(fileName) != ".mbox" && filepath.Ext(fileName) != ".MBOX" && filepath.Ext(fileName) != ".ost" && filepath.Ext(fileName) != ".OST" && filepath.Ext(fileName) != ".msg" && filepath.Ext(fileName) != ".MSG" && filepath.Ext(fileName) != ".dbx" && filepath.Ext(fileName) != ".DBX" && filepath.Ext(fileName) != ".emlx" && filepath.Ext(fileName) != ".EMLX" && filepath.Ext(fileName) != ".docx" && filepath.Ext(fileName) != ".DOCX" && filepath.Ext(fileName) != ".pptx" && filepath.Ext(fileName) != ".PPTX" {
 			os.Remove(files)
 			fmt.Println("Deleting file by extension... ", files)
 			extCount += 1
@@ -192,7 +193,9 @@ func main() {
 		input         string
 		DupCnt        int
 		samesizeFiles [][]filehash
+		test          string
 	)
+	startTime := time.Now()
 	dirPath := input_path(input)
 	st, err := os.Stat(dirPath)
 	if err != nil {
@@ -201,7 +204,7 @@ func main() {
 	if !st.IsDir() {
 		fmt.Println("Invaild path", dirPath)
 	}
-	fmt.Println("\nTasks start............")
+	fmt.Println("\nTasks start : ", startTime)
 	fmt.Println("\n1st routine loding...........\n")
 	fileCnt, _, _, filelst := scanDir(dirPath)
 	fileCnt_ext, extCount := RemoveByExt(filelst, fileCnt)
@@ -218,12 +221,15 @@ func main() {
 			}
 		}
 	}
-	fmt.Println("\nFinish............")
-	fmt.Println("\nResults--------------------------------------------------")
+	elapsedTime := time.Since(startTime)
+	fmt.Println("\nFinish : ", time.Now())
+	fmt.Println("\nResults---------------------------------------------------------")
+	fmt.Printf("\n Program execution time : %s \n", elapsedTime)
 	fmt.Printf("\n Total %d file deleting files by extension : %d files   \n", fileCnt_ext, extCount)
 	fmt.Printf("\n After %v files, %d duplicates\n", fileCnt, DupCnt)
 	fmt.Printf("\n Residual : %d files remain (Not include directorys)\n", fileCnt-DupCnt)
 	fmt.Println("\n----------------------------------------------------------------\n")
+	fmt.Scanln(&test)
 }
 
 //Writer : Myeongjin.Goh
