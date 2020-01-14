@@ -18,7 +18,7 @@ import (
 type filehash struct {
 	path  string
 	hash  uint64
-	mtime time.Time
+	btime time.Time
 	size  int64
 	err   error
 }
@@ -84,8 +84,10 @@ func scanDir(root string) (int, int, [][]filehash, []string) {
 		if len(files) > 1 {
 			fh := make([]filehash, len(files))
 			for i := 0; i < len(files); i++ {
-				fh[i] = filehash{path: files[i], size: size, mtime: fileTime[i]}
+				fh[i] = filehash{path: files[i], size: size, btime: fileTime[i]}
+
 			}
+
 			samesizeFiles = append(samesizeFiles, fh)
 		}
 
@@ -134,8 +136,9 @@ func getDuplicates(potentialDups [][]filehash, scanLength int64) [][]filehash {
 
 func removeDuplicates(duplicates [][]filehash) (dupCount int) {
 	for _, files := range duplicates {
+		//If there are too many duplicate files, they cannot be sorted properly. :(
 		sort.Slice(files, func(i int, j int) bool {
-			return files[i].mtime.Before(files[j].mtime)
+			return files[i].btime.Before(files[j].btime)
 		})
 		fmt.Println("Original is", files[0].path)
 		for _, path := range files[1:] {
