@@ -9,19 +9,22 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
+	"times"
 )
 
 type filehash struct {
-	path string
-	hash uint64
-	size int64
-	err  error
+	path  string
+	hash  uint64
+	mtime time.Time
+	size  int64
+	err   error
 }
 
 const scanAll = 0
-const ScanLength = 2048
+const ScanLength = 4096
 
 //대상 디렉터리 경로를 입력받음
 func input_path(dir string) string {
@@ -38,6 +41,7 @@ func scanDir(root string) (int, int, [][]filehash, []string) {
 		dupCount      = 0
 		sameSizeCount = 0
 		fileByeSize   = make(map[int64][]string)
+		fileTime      []time.Time
 		file_list     []string
 	)
 
@@ -48,9 +52,11 @@ func scanDir(root string) (int, int, [][]filehash, []string) {
 			}
 			file_list = append(file_list, path)
 			info, err := os.Stat(path)
+			info1, err := times.Stat(path)
 			if err == nil {
 				fileCount += 1
 				size := info.Size()
+				fileTime = append(fileTime, info1.BirthTime())
 				if size > 0 {
 					files, ok := fileByeSize[size]
 					if !ok {
@@ -73,13 +79,12 @@ func scanDir(root string) (int, int, [][]filehash, []string) {
 	if err != nil {
 		panic(err)
 	}
-
 	samesizeFiles := make([][]filehash, 0, sameSizeCount)
 	for size, files := range fileByeSize {
 		if len(files) > 1 {
 			fh := make([]filehash, len(files))
 			for i := 0; i < len(files); i++ {
-				fh[i] = filehash{path: files[i], size: size}
+				fh[i] = filehash{path: files[i], size: size, mtime: fileTime[i]}
 			}
 			samesizeFiles = append(samesizeFiles, fh)
 		}
@@ -129,6 +134,9 @@ func getDuplicates(potentialDups [][]filehash, scanLength int64) [][]filehash {
 
 func removeDuplicates(duplicates [][]filehash) (dupCount int) {
 	for _, files := range duplicates {
+		sort.Slice(files, func(i int, j int) bool {
+			return files[i].mtime.Before(files[j].mtime)
+		})
 		fmt.Println("Original is", files[0].path)
 		for _, path := range files[1:] {
 			dupCount += 1
@@ -174,6 +182,9 @@ func RemoveByExt(filelist []string, fileCnt int) (int, int) {
 		file, err := os.Stat(files)
 		if err != nil {
 			panic(err)
+		}
+		if file.Size() == 0 {
+			_ = os.Remove(files)
 		}
 		fileName := file.Name()
 		fmt.Println("Scanning file extension... ", fileName)
