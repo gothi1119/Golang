@@ -12,13 +12,12 @@ import (
 	"sort"
 	"strings"
 	"time"
-	"times"
 )
 
 type filehash struct {
 	path  string
 	hash  uint64
-	btime time.Time
+	mtime time.Time
 	size  int64
 	err   error
 }
@@ -35,6 +34,7 @@ func input_path(dir string) string {
 	return dircs
 }
 
+// Scan input path directorys
 func scanDir(root string) (int, int, [][]filehash, []string) {
 	var (
 		fileCount     = 0
@@ -52,11 +52,10 @@ func scanDir(root string) (int, int, [][]filehash, []string) {
 			}
 			file_list = append(file_list, path)
 			info, err := os.Stat(path)
-			info1, err := times.Stat(path)
 			if err == nil {
 				fileCount += 1
 				size := info.Size()
-				fileTime = append(fileTime, info1.BirthTime())
+				fileTime = append(fileTime, info.ModTime())
 				if size > 0 {
 					files, ok := fileByeSize[size]
 					if !ok {
@@ -79,22 +78,25 @@ func scanDir(root string) (int, int, [][]filehash, []string) {
 	if err != nil {
 		panic(err)
 	}
+
+	//Find Samme files : Files size
 	samesizeFiles := make([][]filehash, 0, sameSizeCount)
 	for size, files := range fileByeSize {
 		if len(files) > 1 {
 			fh := make([]filehash, len(files))
 			for i := 0; i < len(files); i++ {
-				fh[i] = filehash{path: files[i], size: size, btime: fileTime[i]}
+				fh[i] = filehash{path: files[i], size: size, mtime: fileTime[i]}
 
 			}
 
-			samesizeFiles = append(samesizeFiles, fh)
+			samesizeFiles = append(samesizeFiles, fh) //get filelist
 		}
 
 	}
 	return fileCount, dupCount, samesizeFiles, file_list
 }
 
+// Find Dupliecate files
 func getDuplicates(potentialDups [][]filehash, scanLength int64) [][]filehash {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	maxFds := runtime.NumCPU()
@@ -104,7 +106,7 @@ func getDuplicates(potentialDups [][]filehash, scanLength int64) [][]filehash {
 			if scanLength != scanAll || files[idx].size > ScanLength {
 				throttle <- true
 				go func(p *filehash) {
-					getFileChecksum(p, scanLength)
+					getFileChecksum(p, scanLength) //Get files Checksum (Calculating sum64 Hashs)
 					<-throttle
 				}(&files[idx])
 			}
@@ -127,7 +129,7 @@ func getDuplicates(potentialDups [][]filehash, scanLength int64) [][]filehash {
 		}
 		for _, files := range hashToFiles {
 			if len(files) > 1 {
-				duplicates = append(duplicates, files)
+				duplicates = append(duplicates, files) // Add files hash info
 			}
 		}
 	}
@@ -136,9 +138,10 @@ func getDuplicates(potentialDups [][]filehash, scanLength int64) [][]filehash {
 
 func removeDuplicates(duplicates [][]filehash) (dupCount int) {
 	for _, files := range duplicates {
+
 		//If there are too many duplicate files, they cannot be sorted properly. :(
 		sort.Slice(files, func(i int, j int) bool {
-			return files[i].btime.Before(files[j].btime)
+			return files[i].mtime.Before(files[j].mtime)
 		})
 		fmt.Println("Original is", files[0].path)
 		for _, path := range files[1:] {
