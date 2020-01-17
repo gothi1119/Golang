@@ -1,23 +1,25 @@
-
 package main
 
 import (
-  "fmt"
-  "golang.org/x/sys/windows/registry"
+	"fmt"
+	"log"
+	"time"
+
+	"golang.org/x/sys/windows/registry"
 )
 
-package main(){
+func main() {
 
-  k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
-if err != nil {
-	log.Fatal(err)
-}
-defer k.Close()
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer k.Close()
 
-s, _, err := k.GetStringValue("SystemRoot")
-if err != nil {
-	log.Fatal(err)
-}
-fmt.Printf("Windows system root is %q\n", s)
-
+	s, _, err := k.GetIntegerValue("InstallDate")
+	if err != nil {
+		log.Fatal(err)
+	}
+	tm := time.Unix(int64(s), 0)
+	fmt.Printf("Windows system root is %v\n", tm)
 }
