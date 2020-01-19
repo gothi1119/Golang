@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
+	//	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
+	k, err := registry.OpenRemoteKey("C:\\Users\\Gothi\\Desktop\\Regiparser_Exam\\config", registry.LOCAL_MACHINE)
 	if err != nil {
 		log.Fatal(err)
 	}
